@@ -188,7 +188,7 @@ int setLocale(char * argv1)
     	boost::locale::generator gen;
 
 	std::string localeDir = abs_exe_path;
-	localeDir += "/locale/";
+	localeDir += "/locale/lang";
 	LOG(LogInfo) << "Setting local directory to " << localeDir;
     	// Specify location of dictionaries
     	gen.add_messages_path(localeDir);
@@ -404,10 +404,10 @@ int main(int argc, char* argv[])
 
 	while(window.peekGui() != ViewController::get())
 		delete window.peekGui();
-	window.deinit();
 
+	window.renderShutdownScreen();
 	SystemData::deleteSystems();
-
+	window.deinit();
 	LOG(LogInfo) << "EmulationStation cleanly shutting down.";
 
 	return 0;

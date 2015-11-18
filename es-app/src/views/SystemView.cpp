@@ -9,6 +9,11 @@
 #include "Settings.h"
 #include "Util.h"
 #include <boost/locale.hpp>
+#include <guis/GuiMsgBox.h>
+#include <RecalboxSystem.h>
+#include <components/ComponentList.h>
+#include <guis/GuiSettings.h>
+#include <RecalboxConf.h>
 #include "ThemeData.h"
 #include "AudioManager.h"
 
@@ -127,6 +132,40 @@ bool SystemView::input(InputConfig* config, Input input)
 			ViewController::get()->goToGameList(getSelected());
 			return true;
 		}
+		if(config->isMappedTo("select", input) && RecalboxConf::getInstance()->get("system.es.menu") != "none")
+		{
+			auto s = new GuiSettings(mWindow, "QUIT");
+
+			Window *window = mWindow;
+			ComponentListRow row;
+			row.makeAcceptInputHandler([window] {
+				window->pushGui(new GuiMsgBox(window, "REALLY RESTART?", "YES",
+											  [] {
+												  if (RecalboxSystem::getInstance()->reboot() != 0)  {
+													  LOG(LogWarning) << "Restart terminated with non-zero result!";
+												  }
+											  }, "NO", nullptr));
+			});
+			row.addElement(std::make_shared<TextComponent>(window, "RESTART SYSTEM", Font::get(FONT_SIZE_MEDIUM),
+														   0x777777FF), true);
+			s->addRow(row);
+
+			row.elements.clear();
+			row.makeAcceptInputHandler([window] {
+				window->pushGui(new GuiMsgBox(window, "REALLY SHUTDOWN?", "YES",
+											  [] {
+												  if (RecalboxSystem::getInstance()->shutdown() != 0)  {
+													  LOG(LogWarning) <<
+																	  "Shutdown terminated with non-zero result!";
+												  }
+											  }, "NO", nullptr));
+			});
+			row.addElement(std::make_shared<TextComponent>(window, "SHUTDOWN SYSTEM", Font::get(FONT_SIZE_MEDIUM),
+														   0x777777FF), true);
+			s->addRow(row);
+			mWindow->pushGui(s);
+		}
+
 	}else{
 		if(config->isMappedTo("left", input) || config->isMappedTo("right", input))
 			listInput(0);
@@ -187,14 +226,17 @@ void SystemView::onCursorChanged(const CursorState& state)
 	// also change the text after we've fully faded out
 	setAnimation(infoFadeOut, 0, [this, gameCount, favoritesCount] {
 		std::stringstream ss;
-
+ 		if (gameCount == 1)
+		{
+			ss << "1" << boost::locale::gettext(" GAME AVAILABLE");
+		}
 		// only display a game count if there are at least 2 games
-		if (gameCount > 1)
+		else
 		{
 			ss << gameCount << boost::locale::gettext(" GAMES AVAILABLE");
 		}
 
-		else if (favoritesCount > 1)
+		if (favoritesCount > 1)
 		{
 			ss << ", " << favoritesCount << boost::locale::gettext(" FAVORITES");
 		}
