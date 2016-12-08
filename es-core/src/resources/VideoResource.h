@@ -5,7 +5,7 @@
 #include <Eigen/Dense>
 #include <string>
 #include "platform.h"
-#include "glheader.h"
+#include "platform_gl.h"
 
 extern "C"
 {
