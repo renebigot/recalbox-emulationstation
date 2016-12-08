@@ -1,7 +1,7 @@
 #pragma once
 
 #include "platform.h"
-#include GLHEADER
+#include "glheader.h"
 
 #include "GuiComponent.h"
 #include <string>
